@@ -1,0 +1,15 @@
+MyLayer:
+  # component: '@serverless/tencent-layer'
+  component: ../
+  inputs:
+    region: na-toronto
+    name: test
+    code: ./node_modules
+    runtimes:
+      - Nodejs8.9
+    description: test project layer
+    include:
+      - includes
+    exclude:
+      - .bin
+    forcePublish: false
