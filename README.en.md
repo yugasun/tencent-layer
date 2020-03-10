@@ -1,10 +1,10 @@
-# Tencent Cloud Vpc Component
+# Tencent Cloud Layer Component
 
-[简体中文](https://github.com/serverless-components/tencent-vpc/blob/master/README.md) | English
+[简体中文](https://github.com/serverless-components/tencent-layer/blob/master/README.md) | English
 
 ## Introduction
 
-Tencent Cloud Vpc serverless component.
+Tencent Cloud Layer serverless component.
 
 ## Content
 
@@ -45,16 +45,18 @@ TENCENT_SECRET_KEY=XXX
 
 ```yml
 # serverless.yml
-MyVpc:
-  component: '@serverless/tencent-vpc'
+MyLayer:
+  component: '@serverless/tencent-layer'
   inputs:
     region: ap-guangzhou
-    zone: ap-guangzhou-2
-    vpcName: serverless
-    subnetName: serverless
+    name: test
+    code: ./node_modules
+    runtimes:
+      - Nodejs8.9
+    description: test project layer
 ```
 
-- [More Options](https://github.com/serverless-components/tencent-vpc/blob/master/docs/configure.md)
+- [More Options](https://github.com/serverless-components/tencent-layer/blob/master/docs/configure.md)
 
 ### 4. Deploy
 
@@ -68,20 +70,23 @@ $ sls --debug
   DEBUG ─ Creating the template's components graph.
   DEBUG ─ Syncing template state.
   DEBUG ─ Executing the template's components graph.
-  DEBUG ─ Creating vpc serverless...
-  DEBUG ─ Create vpc serverless success.
-  DEBUG ─ Creating subnet serverless...
-  DEBUG ─ Create subnet serverless success.
+  DEBUG ─ Compressing layer test file to /Users/yugasun/Desktop/Develop/serverless/tencent-layer/example/.serverless/test-layer.zip.
+  DEBUG ─ Compressed layer test file successful
+  DEBUG ─ Uploading layer package to cos[sls-cloudlayer-ap-guangzhou-layer]. sls-cloudlayer-test-1583823859.zip
+  DEBUG ─ Creating layer test
+  DEBUG ─ Created layer: test, version: 7 successful
 
-  MyVpc:
-    region:     ap-guangzhou
-    zone:       ap-guangzhou-2
-    vpcName:    serverless
-    subnetName: serverless
-    subnetId:   subnet-kwtsloz4
-    vpcId:      vpc-hqydtuy1
+  MyLayer:
+    region:      ap-guangzhou
+    name:        test
+    description: test project layer
+    runtimes:
+      - Nodejs8.9
+    licenseInfo:
+    hash:        d41cdf04bd33315be0d87e8562de9dd8
+    version:     7
 
-  5s › MyVpc › done
+  12s › MyLayer › done
 ```
 
 > Notice: `sls` is short for `serverless` command.
@@ -94,12 +99,10 @@ $ sls --debug
 $ sls remove --debug
 
   DEBUG ─ Flushing template state and removing all components.
-  DEBUG ─ Start removing subnet subnet-kwtsloz4
-  DEBUG ─ Removed subnet subnet-kwtsloz4
-  DEBUG ─ Start removing vpc vpc-hqydtuy1
-  DEBUG ─ Removed vpc vpc-hqydtuy1
+  DEBUG ─ Start removing layer: test, version: 7...
+  DEBUG ─ Remove layer: test, version: 7 successfully
 
-  7s › MyVpc › done
+  6s › MyLayer › done
 ```
 
 ### More Components

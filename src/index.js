@@ -128,7 +128,7 @@ class TencentLayer extends Component {
         context.instance.multiBar.count = 0
       }
       const uploadBar = context.instance.multiBar.create(100, 0, {
-        filename: layerConf.name
+        filename: `[Layer] ${layerConf.name}`
       })
 
       context.instance.multiBar.count += 1
@@ -187,6 +187,10 @@ class TencentLayer extends Component {
       SecretId: tencentCredentials.SecretId,
       SecretKey: tencentCredentials.SecretKey
     })
+
+    context.debug(`Start removing layer: ${state.name}, version: ${state.version}...`)
+    await apis.deleteLayerVersion(context, capi, state.name, state.version)
+    context.debug(`Remove layer: ${state.name}, version: ${state.version} successfully`)
 
     this.state = {}
     await this.save()
