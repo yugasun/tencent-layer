@@ -1,5 +1,8 @@
 # 腾讯云 Layer 组件
 
+[![npm](https://img.shields.io/npm/v/%40serverless%2Ftencent-layer)](http://www.npmtrends.com/%40serverless%2Ftencent-layer)
+[![NPM downloads](http://img.shields.io/npm/dm/%40serverless%2Ftencent-layer.svg?style=flat-square)](http://www.npmtrends.com/%40serverless%2Ftencent-layer)
+
 简体中文 | [English](https://github.com/serverless-components/tencent-layer/blob/master/README.en.md)
 
 ## 简介

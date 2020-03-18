@@ -5,6 +5,9 @@ MyLayer:
     region: na-toronto
     name: test
     code: ./node_modules
+    bucketConf:
+      # key: sls-cloudlayer-test-1584524206.zip
+      # bucket: layers
     runtimes:
       - Nodejs8.9
     description: test project layer

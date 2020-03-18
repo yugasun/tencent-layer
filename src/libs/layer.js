@@ -48,8 +48,8 @@ class Layer {
   getLayerResource(layerObject) {
     const layerResource = {
       Content: {
-        CosBucketName: this.getCosBucketName(),
-        CosObjectName: this.getBucketKey(layerObject.name)
+        CosBucketName: layerObject.bucketConf.bucket || this.getCosBucketName(),
+        CosObjectName: layerObject.bucketConf.key || this.getBucketKey(layerObject.name)
       },
       Description: layerObject.description || 'This is a template layer',
       Region: layerObject.region || 'ap-guangzhou',
@@ -60,36 +60,88 @@ class Layer {
     return layerResource
   }
 
-  async uploadPackage2Cos(bucketName, key, filePath, onProgress) {
+  async getObject(bucketName, key) {
+    const { region } = this.options
+    const headObjectArgs = {
+      Bucket: bucketName,
+      Key: key,
+      Region: region
+    }
+    const handler = util.promisify(this.cosClient.headObject.bind(this.cosClient))
+    try {
+      await handler(headObjectArgs)
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+
+  async uploadPackage2Cos(bucketName, key, filePath, onProgress, autoCreate) {
     let handler
     const { region } = this
     const cosBucketNameFull = util.format('%s-%s', bucketName, this.appId)
 
-    // get region all bucket list
-    let buckets
-    handler = util.promisify(this.cosClient.getService.bind(this.cosClient))
-    try {
-      buckets = await handler({ Region: region })
-    } catch (e) {
-      throw e
-    }
-
-    const [findBucket] = buckets.Buckets.filter((item) => {
-      return item.Name === cosBucketNameFull
-    })
-
-    // create a new bucket
-    if (!findBucket) {
-      const putArgs = {
-        Bucket: cosBucketNameFull,
-        Region: region
-      }
-      handler = util.promisify(this.cosClient.putBucket.bind(this.cosClient))
+    if (autoCreate === true) {
+      // get region all bucket list
+      let buckets
+      handler = util.promisify(this.cosClient.getService.bind(this.cosClient))
       try {
-        await handler(putArgs)
+        buckets = await handler({ Region: region })
       } catch (e) {
         throw e
       }
+
+      const [findBucket] = buckets.Buckets.filter((item) => {
+        return item.Name === cosBucketNameFull
+      })
+
+      // create a new bucket
+      if (!findBucket) {
+        const putArgs = {
+          Bucket: cosBucketNameFull,
+          Region: region
+        }
+        handler = util.promisify(this.cosClient.putBucket.bind(this.cosClient))
+        try {
+          await handler(putArgs)
+        } catch (e) {
+          throw e
+        }
+      }
+
+      // 设置Bucket生命周期
+      try {
+        let tempLifeCycle
+        handler = util.promisify(this.cosClient.getBucketLifecycle.bind(this.cosClient))
+        const lifeCycleSetting = await handler({
+          Bucket: cosBucketNameFull,
+          Region: region
+        })
+        for (let i = 0; i < lifeCycleSetting.Rules.length; i++) {
+          if (lifeCycleSetting.Rules[i].ID == 'deleteObject') {
+            tempLifeCycle = true
+            break
+          }
+        }
+        if (!tempLifeCycle) {
+          const putArgs = {
+            Bucket: cosBucketNameFull,
+            Region: region,
+            Rules: [
+              {
+                Status: 'Enabled',
+                ID: 'deleteObject',
+                Filter: '',
+                Expiration: { Days: '10' },
+                AbortIncompleteMultipartUpload: { DaysAfterInitiation: '10' }
+              }
+            ],
+            stsAction: 'cos:PutBucketLifeCycle'
+          }
+          handler = util.promisify(this.cosClient.putBucketLifecycle.bind(this.cosClient))
+          await handler(putArgs)
+        }
+      } catch (e) {}
     }
 
     if (fs.statSync(filePath).size <= 10 * 1024 * 1024) {

@@ -2,6 +2,7 @@ const { Component } = require('@serverless/core')
 const { Capi } = require('@tencent-sdk/capi')
 const tencentAuth = require('serverless-tencent-auth-tool')
 const ensureIterable = require('type/iterable/ensure')
+const ensureObject = require('type/object/ensure')
 const cliProgress = require('cli-progress')
 const ensureString = require('type/string/ensure')
 
@@ -53,6 +54,14 @@ class TencentLayer extends Component {
     })
     layerConf.include = ensureIterable(inputs.include, { default: [], ensureItem: ensureString })
     layerConf.exclude = ensureIterable(inputs.exclude, { default: [], ensureItem: ensureString })
+    layerConf.bucketConf = ensureObject(inputs.bucketConf, { default: {} })
+
+    const defaultExclude = ['.serverless', '.temp_env', '.git/**', '.gitignore']
+    defaultExclude.forEach((item) => {
+      if (layerConf.exclude.indexOf(item) !== -1) {
+        layerConf.exclude.push(item)
+      }
+    })
 
     const capi = new Capi({
       Region: layerConf.region,
@@ -83,20 +92,9 @@ class TencentLayer extends Component {
       }
     })
 
-    // packDir
-    const zipOutput = `${context.instance.stateRoot}/${layerConf.name}-layer.zip`
-    context.debug(`Compressing layer ${layerConf.name} file to ${zipOutput}.`)
-    await Zipper.packDir(layerConf.code, zipOutput, layerConf.include, layerConf.exclude)
-    context.debug(`Compressed layer ${layerConf.name} file successful`)
-
-    // check code hash, if not change, just updata function configure
-    const layerHash = Zipper.getFileHash(zipOutput)
-
-    outputs.hash = layerHash
-    const needUpdateCode = this.layerStateChange({
-      newState: outputs,
-      oldState
-    })
+    const { Content } = layer.resource
+    const cosBucketName = Content.CosBucketName
+    const cosBucketKey = Content.CosObjectName
 
     // get target vesion layer
     let exist = false
@@ -105,56 +103,91 @@ class TencentLayer extends Component {
       exist = !!res.LayerVersion
     }
 
-    if (needUpdateCode || !exist || forcePublish === true) {
-      // upload to cos
-      const { Content } = layer.resource
-      const cosBucketName = Content.CosBucketName
-      const cosBucketKey = Content.CosObjectName
+    if (!exist || forcePublish === true) {
+      if (!layerConf.bucketConf.key) {
+        // packDir
+        const zipOutput = `${context.instance.stateRoot}/${layerConf.name}-layer.zip`
+        context.debug(`Compressing layer ${layerConf.name} file to ${zipOutput}.`)
+        await Zipper.packDir(layerConf.code, zipOutput, layerConf.include, layerConf.exclude)
+        context.debug(`Compressed layer ${layerConf.name} file successful`)
 
-      context.debug(`Uploading layer package to cos[${cosBucketName}]. ${cosBucketKey}`)
-      // display upload bar
-      if (!context.instance.multiBar) {
-        context.instance.multiBar = new cliProgress.MultiBar(
-          {
-            forceRedraw: true,
-            hideCursor: true,
-            linewrap: true,
-            clearOnComplete: false,
-            format: `  {filename} [{bar}] {percentage}% | ETA: {eta}s | Speed: {speed}k/s`,
-            speed: 'N/A'
-          },
-          cliProgress.Presets.shades_grey
-        )
-        context.instance.multiBar.count = 0
-      }
-      const uploadBar = context.instance.multiBar.create(100, 0, {
-        filename: `[Layer] ${layerConf.name}`
-      })
+        // check code hash, if not change, just updata function configure
+        const layerHash = Zipper.getFileHash(zipOutput)
+        outputs.hash = layerHash
 
-      context.instance.multiBar.count += 1
-      const onProgress = ({ percent, speed }) => {
-        const percentage = Math.round(percent * 100)
+        let needUpdateCode = this.layerStateChange({
+          newState: outputs,
+          oldState
+        })
 
-        if (percent === 1) {
-          uploadBar.update(100, {
-            speed: (speed / 1024).toFixed(2)
-          })
-          setTimeout(() => {
-            context.instance.multiBar.remove(uploadBar)
-            context.instance.multiBar.count -= 1
-            if (context.instance.multiBar.count <= 0) {
-              context.instance.multiBar.stop()
-            }
-          }, 300)
+        // upload to cos
+        // 判断是否需要上传代码
+        if (!needUpdateCode && this.state.bucketName && this.state.bucketKey) {
+          const objectExist = await layer.getObject(
+            `${this.state.bucketName}-${tencentCredentials.AppId}`,
+            this.state.bucketKey
+          )
+          if (!objectExist) {
+            needUpdateCode = true
+          }
         } else {
-          uploadBar.update(percentage, {
-            speed: (speed / 1024).toFixed(2)
+          needUpdateCode = true
+        }
+
+        if (needUpdateCode) {
+          context.debug(`Uploading layer package to cos[${cosBucketName}]. ${cosBucketKey}`)
+          // display upload bar
+          if (!context.instance.multiBar) {
+            context.instance.multiBar = new cliProgress.MultiBar(
+              {
+                forceRedraw: true,
+                hideCursor: true,
+                linewrap: true,
+                clearOnComplete: false,
+                format: `  {filename} [{bar}] {percentage}% | ETA: {eta}s | Speed: {speed}k/s`,
+                speed: 'N/A'
+              },
+              cliProgress.Presets.shades_grey
+            )
+            context.instance.multiBar.count = 0
+          }
+          const uploadBar = context.instance.multiBar.create(100, 0, {
+            filename: `[Layer] ${layerConf.name}`
           })
+
+          context.instance.multiBar.count += 1
+          const onProgress = ({ percent, speed }) => {
+            const percentage = Math.round(percent * 100)
+
+            if (percent === 1) {
+              uploadBar.update(100, {
+                speed: (speed / 1024).toFixed(2)
+              })
+              setTimeout(() => {
+                context.instance.multiBar.remove(uploadBar)
+                context.instance.multiBar.count -= 1
+                if (context.instance.multiBar.count <= 0) {
+                  context.instance.multiBar.stop()
+                }
+              }, 300)
+            } else {
+              uploadBar.update(percentage, {
+                speed: (speed / 1024).toFixed(2)
+              })
+            }
+          }
+
+          const autoCreateBucket = !layerConf.bucketConf.key && !layerConf.bucketConf.bucket
+          await layer.uploadPackage2Cos(
+            cosBucketName,
+            cosBucketKey,
+            zipOutput,
+            onProgress,
+            autoCreateBucket
+          )
+          context.debug(`Uploaded package successful ${zipOutput}`)
         }
       }
-      await layer.uploadPackage2Cos(cosBucketName, cosBucketKey, zipOutput, onProgress)
-      context.debug(`Uploaded package successful ${zipOutput}`)
-
       // publish layer
       this.context.debug(`Creating layer ${layerConf.name}`)
       const version = await apis.publishLayer(context, capi, layer.resource)
@@ -165,6 +198,9 @@ class TencentLayer extends Component {
       context.debug(`Layer ${layerConf.name}, version: ${oldState.version} exist.`)
       outputs.version = oldState.version
     }
+
+    outputs.bucketName = cosBucketName
+    outputs.bucketKey = cosBucketKey
 
     this.state = outputs
     await this.save()
