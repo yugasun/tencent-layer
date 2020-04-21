@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.1](https://github.com/yugasun/tencent-layer/compare/v0.1.0...v0.1.1) (2020-04-21)
+
+
+### Bug Fixes
+
+* readme code to src ([a20567b](https://github.com/yugasun/tencent-layer/commit/a20567b55b14f95bc72b72753ee5e9e8d00b7207))
+
 ## 0.1.0 (2020-04-21)
 
 
