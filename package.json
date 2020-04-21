@@ -1,7 +1,7 @@
 {
   "name": "@serverless/tencent-layer",
   "description": "Tencent Cloud Layer Component",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "main": "serverless.js",
   "publishConfig": {
     "access": "public"
