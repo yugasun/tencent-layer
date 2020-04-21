@@ -15,12 +15,15 @@ const utils = {
    */
   async getLayerDetail(context, capi, LayerName, LayerVersion) {
     // get instance detail
-    const res = await GetLayerVersion(capi, {
-      LayerName,
-      LayerVersion
-    })
-
-    return res
+    try {
+      const res = await GetLayerVersion(capi, {
+        LayerName,
+        LayerVersion
+      })
+      return res
+    } catch (e) {
+      return {}
+    }
   },
 
   /**

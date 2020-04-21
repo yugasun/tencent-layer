@@ -1,16 +1,14 @@
 MyLayer:
-  # component: '@serverless/tencent-layer'
-  component: ../
+  component: '@serverless/tencent-layer'
   inputs:
-    region: na-toronto
-    name: test
-    code: ./node_modules
+    region: ap-guangzhou
+    name: layerTest
+    src: ./node_modules
     bucketConf:
       # key: sls-cloudlayer-test-1584524206.zip
       # bucket: layers
     runtimes:
       - Nodejs8.9
-    description: test project layer
     include:
       - includes
     exclude:

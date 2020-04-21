@@ -5,9 +5,9 @@ const ensureIterable = require('type/iterable/ensure')
 const ensureObject = require('type/object/ensure')
 const cliProgress = require('cli-progress')
 const ensureString = require('type/string/ensure')
+const { zipDirectory, fileHash } = require('@ygkit/file')
 
 const apis = require('./apis')
-const Zipper = require('./libs/zip')
 const Layer = require('./libs/layer')
 
 class TencentLayer extends Component {
@@ -42,11 +42,11 @@ class TencentLayer extends Component {
 
     const { forcePublish } = inputs
     const layerConf = {}
-    layerConf.code = ensureString(inputs.code) || process.cwd()
-    layerConf.name = ensureString(inputs.name)
+    layerConf.src = ensureString(inputs.src) || process.cwd()
+    layerConf.name = ensureString(inputs.name, { default: 'layer_' })
     layerConf.region = ensureString(inputs.region, { default: 'ap-guangzhou' })
     layerConf.description = ensureString(inputs.description, {
-      default: 'Layer created by tencent-layer component'
+      default: 'Layer created by serverless component'
     })
     layerConf.runtimes = ensureIterable(inputs.runtimes, {
       default: ['Nodejs8.9'],
@@ -56,9 +56,9 @@ class TencentLayer extends Component {
     layerConf.exclude = ensureIterable(inputs.exclude, { default: [], ensureItem: ensureString })
     layerConf.bucketConf = ensureObject(inputs.bucketConf, { default: {} })
 
-    const defaultExclude = ['.serverless', '.temp_env', '.git/**', '.gitignore']
+    const defaultExclude = ['.serverless', '.temp_env', '.env', '.git/**', '.gitignore']
     defaultExclude.forEach((item) => {
-      if (layerConf.exclude.indexOf(item) !== -1) {
+      if (layerConf.exclude.indexOf(item) === -1) {
         layerConf.exclude.push(item)
       }
     })
@@ -108,11 +108,11 @@ class TencentLayer extends Component {
         // packDir
         const zipOutput = `${context.instance.stateRoot}/${layerConf.name}-layer.zip`
         context.debug(`Compressing layer ${layerConf.name} file to ${zipOutput}.`)
-        await Zipper.packDir(layerConf.code, zipOutput, layerConf.include, layerConf.exclude)
+        await zipDirectory(layerConf.src, zipOutput, layerConf.include, layerConf.exclude)
         context.debug(`Compressed layer ${layerConf.name} file successful`)
 
         // check code hash, if not change, just updata function configure
-        const layerHash = Zipper.getFileHash(zipOutput)
+        const layerHash = fileHash(zipOutput)
         outputs.hash = layerHash
 
         let needUpdateCode = this.layerStateChange({

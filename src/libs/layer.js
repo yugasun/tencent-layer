@@ -51,7 +51,7 @@ class Layer {
         CosBucketName: layerObject.bucketConf.bucket || this.getCosBucketName(),
         CosObjectName: layerObject.bucketConf.key || this.getBucketKey(layerObject.name)
       },
-      Description: layerObject.description || 'This is a template layer',
+      Description: layerObject.description || 'Layer created by serverless component',
       Region: layerObject.region || 'ap-guangzhou',
       CompatibleRuntimes: layerObject.runtimes || ['Nodejs8.9'],
       LayerName: layerObject.name
