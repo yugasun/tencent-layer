@@ -53,7 +53,7 @@ MyLayer:
   inputs:
     region: ap-guangzhou
     name: test
-    code: ./node_modules
+    src: ./node_modules
     runtimes:
       - Nodejs8.9
     description: test project layer
