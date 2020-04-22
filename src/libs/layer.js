@@ -61,7 +61,7 @@ class Layer {
   }
 
   async getObject(bucketName, key) {
-    const { region } = this.options
+    const { region } = this.inputs
     const headObjectArgs = {
       Bucket: bucketName,
       Key: key,

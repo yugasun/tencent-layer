@@ -103,7 +103,18 @@ class TencentLayer extends Component {
       exist = !!res.LayerVersion
     }
 
-    if (!exist || forcePublish === true) {
+    const configChange = this.layerStateChange({
+      newState: outputs,
+      oldState: {
+        region: oldState.region,
+        name: oldState.name,
+        description: oldState.description,
+        runtimes: oldState.runtimes,
+        licenseInfo: oldState.licenseInfo || ''
+      }
+    })
+
+    if (!exist || forcePublish === true || configChange) {
       if (!layerConf.bucketConf.key) {
         // packDir
         const zipOutput = `${context.instance.stateRoot}/${layerConf.name}-layer.zip`
@@ -115,10 +126,7 @@ class TencentLayer extends Component {
         const layerHash = fileHash(zipOutput)
         outputs.hash = layerHash
 
-        let needUpdateCode = this.layerStateChange({
-          newState: outputs,
-          oldState
-        })
+        let needUpdateCode = layerHash !== oldState.hash
 
         // upload to cos
         // 判断是否需要上传代码
@@ -129,6 +137,9 @@ class TencentLayer extends Component {
           )
           if (!objectExist) {
             needUpdateCode = true
+          } else {
+            layer.resource.Content.CosBucketName = this.state.bucketName
+            layer.resource.Content.CosObjectName = this.state.bucketKey
           }
         } else {
           needUpdateCode = true
@@ -190,6 +201,7 @@ class TencentLayer extends Component {
       }
       // publish layer
       this.context.debug(`Creating layer ${layerConf.name}`)
+
       const version = await apis.publishLayer(context, capi, layer.resource)
 
       context.debug(`Created layer: ${layerConf.name}, version: ${version} successful`)
