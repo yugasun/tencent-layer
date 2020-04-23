@@ -44,6 +44,9 @@ class TencentLayer extends Component {
     const layerConf = {}
     layerConf.src = ensureString(inputs.src) || process.cwd()
     layerConf.name = ensureString(inputs.name, { default: 'layer_' })
+    layerConf.zipFilename = ensureString(inputs.zipFilename, {
+      default: `${layerConf.name}-layer.zip`
+    })
     layerConf.region = ensureString(inputs.region, { default: 'ap-guangzhou' })
     layerConf.disableTraverse = ensureString(inputs.disableTraverse, { default: false })
     layerConf.description = ensureString(inputs.description, {

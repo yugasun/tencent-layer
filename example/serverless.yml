@@ -4,6 +4,7 @@ MyLayer:
     region: ap-guangzhou
     name: layerTest
     src: ./node_modules
+    zipFilename: node_modules
     bucketConf:
       # key: sls-cloudlayer-test-1584524206.zip
       # bucket: layers
