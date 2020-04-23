@@ -6,6 +6,7 @@ const ensureObject = require('type/object/ensure')
 const cliProgress = require('cli-progress')
 const ensureString = require('type/string/ensure')
 const { zipDirectory, fileHash } = require('@ygkit/file')
+const path = require('path')
 
 const apis = require('./apis')
 const Layer = require('./libs/layer')
@@ -45,7 +46,7 @@ class TencentLayer extends Component {
     layerConf.src = ensureString(inputs.src) || process.cwd()
     layerConf.name = ensureString(inputs.name, { default: 'layer_' })
     layerConf.zipFilename = ensureString(inputs.zipFilename, {
-      default: `${layerConf.name}-layer.zip`
+      default: path.basename(layerConf.src)
     })
     layerConf.region = ensureString(inputs.region, { default: 'ap-guangzhou' })
     layerConf.disableTraverse = ensureString(inputs.disableTraverse, { default: false })
@@ -79,6 +80,7 @@ class TencentLayer extends Component {
     const outputs = {
       region: layerConf.region,
       name: layerConf.name,
+      zipFilename: layerConf.zipFilename,
       description: layerConf.description,
       runtimes: layerConf.runtimes,
       licenseInfo: layerConf.licenseInfo || ''
@@ -112,6 +114,7 @@ class TencentLayer extends Component {
       oldState: {
         region: oldState.region,
         name: oldState.name,
+        zipFilename: oldState.zipFilename,
         description: oldState.description,
         runtimes: oldState.runtimes,
         licenseInfo: oldState.licenseInfo || ''
@@ -121,7 +124,7 @@ class TencentLayer extends Component {
     if (!exist || forcePublish === true || configChange) {
       if (!layerConf.bucketConf.key) {
         // packDir
-        const zipOutput = `${context.instance.stateRoot}/${layerConf.name}-layer.zip`
+        const zipOutput = `${context.instance.stateRoot}/${layerConf.zipFilename}.zip`
         context.debug(`Compressing layer ${layerConf.name} file to ${zipOutput}.`)
         await zipDirectory(
           layerConf.src,
