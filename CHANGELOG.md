@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.3](https://github.com/yugasun/tencent-layer/compare/v0.1.2...v0.1.3) (2020-04-23)
+
+
+### Features
+
+* add disable traverse ([8032b8d](https://github.com/yugasun/tencent-layer/commit/8032b8d2576d969e30cc8197b8e43879908eac3e))
+
 ### [0.1.2](https://github.com/yugasun/tencent-layer/compare/v0.1.1...v0.1.2) (2020-04-22)
 
 
