@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.6](https://github.com/yugasun/tencent-layer/compare/v0.1.5...v0.1.6) (2020-04-23)
+
+
+### Bug Fixes
+
+* layer remove bind relation error ([b0900f7](https://github.com/yugasun/tencent-layer/commit/b0900f7a4d998d9bddc2499661918bc8d7c70436))
+
 ### [0.1.5](https://github.com/yugasun/tencent-layer/compare/v0.1.4...v0.1.5) (2020-04-23)
 
 
