@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.4](https://github.com/yugasun/tencent-layer/compare/v0.1.3...v0.1.4) (2020-04-23)
+
+
+### Features
+
+* add zip filename ([e7a4d3b](https://github.com/yugasun/tencent-layer/commit/e7a4d3b9cc160c0408a13723df5b5f41b8c2a748))
+
 ### [0.1.3](https://github.com/yugasun/tencent-layer/compare/v0.1.2...v0.1.3) (2020-04-23)
 
 
