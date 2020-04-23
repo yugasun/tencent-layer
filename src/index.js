@@ -45,6 +45,7 @@ class TencentLayer extends Component {
     layerConf.src = ensureString(inputs.src) || process.cwd()
     layerConf.name = ensureString(inputs.name, { default: 'layer_' })
     layerConf.region = ensureString(inputs.region, { default: 'ap-guangzhou' })
+    layerConf.disableTraverse = ensureString(inputs.disableTraverse, { default: false })
     layerConf.description = ensureString(inputs.description, {
       default: 'Layer created by serverless component'
     })
@@ -119,7 +120,13 @@ class TencentLayer extends Component {
         // packDir
         const zipOutput = `${context.instance.stateRoot}/${layerConf.name}-layer.zip`
         context.debug(`Compressing layer ${layerConf.name} file to ${zipOutput}.`)
-        await zipDirectory(layerConf.src, zipOutput, layerConf.include, layerConf.exclude)
+        await zipDirectory(
+          layerConf.src,
+          zipOutput,
+          layerConf.include,
+          layerConf.exclude,
+          layerConf.disableTraverse
+        )
         context.debug(`Compressed layer ${layerConf.name} file successful`)
 
         // check code hash, if not change, just updata function configure
