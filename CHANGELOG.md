@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5](https://github.com/yugasun/tencent-layer/compare/v0.1.4...v0.1.5) (2020-04-23)
+
+
+### Bug Fixes
+
+* make zip filename default to src basename ([e0537e5](https://github.com/yugasun/tencent-layer/commit/e0537e5f6731bcf2dc11ddba610d70527fc72046))
+
 ### [0.1.4](https://github.com/yugasun/tencent-layer/compare/v0.1.3...v0.1.4) (2020-04-23)
 
 
