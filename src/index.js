@@ -249,12 +249,16 @@ class TencentLayer extends Component {
       SecretKey: tencentCredentials.SecretKey
     })
 
-    context.debug(`Start removing layer: ${state.name}, version: ${state.version}...`)
-    await apis.deleteLayerVersion(context, capi, state.name, state.version)
-    context.debug(`Remove layer: ${state.name}, version: ${state.version} successfully`)
+    try {
+      context.debug(`Start removing layer: ${state.name}, version: ${state.version}...`)
+      await apis.deleteLayerVersion(context, capi, state.name, state.version)
+      context.debug(`Remove layer: ${state.name}, version: ${state.version} successfully`)
+      this.state = {}
+      await this.save()
+    } catch (e) {
+      context.debug(e)
+    }
 
-    this.state = {}
-    await this.save()
     return {}
   }
 }
