@@ -1,17 +1,15 @@
 MyLayer:
   component: '@serverless/tencent-layer'
+  # component: ../
   inputs:
     region: ap-guangzhou
     name: layerTest
     src: ./node_modules
     zipFilename: node_modules
-    bucketConf:
-      # key: sls-cloudlayer-test-1584524206.zip
-      # bucket: layers
+    # bucketConf:
+    #   object: sls-cloudlayer-test-1584524206.zip
+    #   bucket: layers
     runtimes:
       - Nodejs8.9
-    include:
-      - includes
-    exclude:
-      - .bin
+      - Nodejs10.15
     forcePublish: false

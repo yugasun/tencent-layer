@@ -43,7 +43,7 @@ class TencentLayer extends Component {
 
     const { forcePublish } = inputs
     const layerConf = {}
-    layerConf.src = ensureString(inputs.src) || process.cwd()
+    layerConf.src = ensureString(inputs.src, { default: '' }) || process.cwd()
     layerConf.name = ensureString(inputs.name, { default: 'layer_' })
     layerConf.zipFilename = ensureString(inputs.zipFilename, {
       default: path.basename(layerConf.src)
@@ -122,7 +122,7 @@ class TencentLayer extends Component {
     })
 
     if (!exist || forcePublish === true || configChange) {
-      if (!layerConf.bucketConf.key) {
+      if (!layerConf.bucketConf.object) {
         // packDir
         const zipOutput = `${context.instance.stateRoot}/${layerConf.zipFilename}.zip`
         context.debug(`Compressing layer ${layerConf.name} file to ${zipOutput}.`)
@@ -201,7 +201,7 @@ class TencentLayer extends Component {
             }
           }
 
-          const autoCreateBucket = !layerConf.bucketConf.key && !layerConf.bucketConf.bucket
+          const autoCreateBucket = !layerConf.bucketConf.object && !layerConf.bucketConf.bucket
           await layer.uploadPackage2Cos(
             cosBucketName,
             cosBucketKey,

@@ -49,7 +49,7 @@ class Layer {
     const layerResource = {
       Content: {
         CosBucketName: layerObject.bucketConf.bucket || this.getCosBucketName(),
-        CosObjectName: layerObject.bucketConf.key || this.getBucketKey(layerObject.name)
+        CosObjectName: layerObject.bucketConf.object || this.getBucketKey(layerObject.name)
       },
       Description: layerObject.description || 'Layer created by serverless component',
       Region: layerObject.region || 'ap-guangzhou',
